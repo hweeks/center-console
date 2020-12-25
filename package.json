@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "a tool to center console output",
   "main": "dist/index.js",
+  "typings": "dist/index.ts",
   "author": "hammie",
   "license": "WTFPL",
   "private": false,

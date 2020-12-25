@@ -1,6 +1,6 @@
 {
   "name": "center-console",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "a tool to center console output",
   "main": "dist/index.js",
   "author": "hammie",

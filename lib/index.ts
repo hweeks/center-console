@@ -1,11 +1,12 @@
 import os from 'os';
 
-interface ScreenSize {
+export interface ScreenSize {
   x: number,
   y: number
 }
 
-type AlignmentChoices = 'left' | 'center' | 'right'
+export type AlignmentChoices = 'left' | 'center' | 'right'
+export type LayoutChoices = 'top' | 'center' | 'bottom'
 
 export class CenterConsole {
   windowSize: ScreenSize
@@ -31,16 +32,52 @@ export class CenterConsole {
     return { x, y };
   }
 
-  getPadding(longestRow: number) {
-    if (this.align === 'left') {
+  getPadding(rowLength: number, alignmentChoice = this.align, areaLength = this.windowSize.x) {
+    if (alignmentChoice === 'left') {
       return 0;
-    } if (this.align === 'center') {
-      return Math.ceil((this.windowSize.x - longestRow) / 2);
+    } if (alignmentChoice === 'center') {
+      return Math.floor((areaLength - rowLength) / 2);
     }
-    return Math.floor((this.windowSize.x - longestRow));
+    return Math.floor((areaLength - rowLength));
   }
 
-  render(frame: string | string[]) {
+  getLeftPadding(rowLength: number, alignmentChoice = this.align, areaLength = this.windowSize.x) {
+    if (alignmentChoice === 'left') {
+      return 0;
+    } if (alignmentChoice === 'center') {
+      return Math.floor((areaLength - rowLength) / 2);
+    }
+    return Math.floor((areaLength - rowLength));
+  }
+
+  getRightPadding(rowLength: number, alignmentChoice = this.align, areaLength = this.windowSize.x) {
+    if (alignmentChoice === 'right') {
+      return 0;
+    } if (alignmentChoice === 'center') {
+      return Math.floor((areaLength - rowLength) / 2);
+    }
+    return Math.floor((areaLength - rowLength));
+  }
+
+  getTopPadding(rowLength: number, alignmentChoice = 'center', areaLength = this.windowSize.y) {
+    if (alignmentChoice === 'top') {
+      return 0;
+    } if (alignmentChoice === 'center') {
+      return Math.floor((areaLength - rowLength) / 2);
+    }
+    return Math.floor((areaLength - rowLength));
+  }
+
+  getBottomPadding(rowLength: number, alignmentChoice = 'center', areaLength = this.windowSize.y) {
+    if (alignmentChoice === 'bottom') {
+      return 0;
+    } if (alignmentChoice === 'center') {
+      return Math.floor((areaLength - rowLength) / 2);
+    }
+    return Math.floor((areaLength - rowLength));
+  }
+
+  render(frame: string | string[], shouldPadRows = true) {
     if (this.lastFrame === frame) {
       return;
     }
@@ -52,7 +89,7 @@ export class CenterConsole {
     const frameRows = Array.isArray(frame) ? frame : frame.split('\n');
     const maxRowHeight = frameRows.length;
     const rowsToPad = Math.ceil((this.windowSize.y - maxRowHeight) / 2);
-    let finalizedRows = frameRows.map((row) => Array(this.getPadding(row.length)).fill(' ').join('') + row);
+    let finalizedRows = shouldPadRows ? frameRows.map((row) => Array(this.getPadding(row.length)).fill(' ').join('') + row) : frameRows;
     finalizedRows = rowsToPad > 0 ? [...Array(rowsToPad).fill(' '), ...finalizedRows] : finalizedRows;
     console.clear();
     console.log(finalizedRows.join('\n'));

@@ -25,17 +25,10 @@ export class CenterConsole {
     this.shouldCheckWindowManually = os.type() === 'Windows_NT';
   }
 
+  // eslint-disable-next-line class-methods-use-this
   getScreenSize() : ScreenSize {
     const [x, y] = process.stdout.getWindowSize();
     return { x, y };
-  }
-
-  getMaxRowLength(inputStrings : string[]) {
-    let maxLength = inputStrings[0].length;
-    for (let i = 0; i < inputStrings.length; i++) {
-      maxLength = inputStrings[i].length > maxLength ? inputStrings[i].length : maxLength;
-    }
-    return maxLength;
   }
 
   getPadding(longestRow: number) {
@@ -65,3 +58,5 @@ export class CenterConsole {
     console.log(finalizedRows.join('\n'));
   }
 }
+
+export default CenterConsole;

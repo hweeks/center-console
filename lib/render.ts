@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-import CenterConsole, { AlignmentChoices, LayoutChoices } from '.';
+import CenterConsole, { AlignmentChoices, LayoutChoices } from './center-console';
 import { render } from './runtime/jsx-runtime';
 
 export interface RowInternalLayout {
@@ -24,9 +24,9 @@ function flattenElements(rowValue : any) : RowLayout {
   const widthModifier = rowValue.width ? rowValue.width / 100 : undefined;
   const heightModifier = rowValue.height ? rowValue.height / 100 : undefined;
   const layoutPosition = rowValue.alignSelf || 'center';
-  if (rowValue.internalDom[0]?.nodeValue) {
-    const textValue = rowValue.internalDom[0].nodeValue;
-    const textLength = rowValue.internalDom[0].nodeLength;
+  if (rowValue.children[0]?.nodeValue) {
+    const textValue = rowValue.children[0].nodeValue;
+    const textLength = rowValue.children[0].nodeLength;
     return {
       content: {
         textValue,
@@ -41,7 +41,7 @@ function flattenElements(rowValue : any) : RowLayout {
     };
   }
   return {
-    content: rowValue.internalDom.map(flattenElements),
+    content: rowValue.children.map(flattenElements),
     container: {
       heightModifier,
       layoutPosition,
@@ -50,15 +50,15 @@ function flattenElements(rowValue : any) : RowLayout {
 }
 
 export class ConsoleRender extends CenterConsole {
-  internalDom: any
+  children: any
 
   constructor(align?: AlignmentChoices) {
     super(align || 'center');
-    this.internalDom = [];
+    this.children = [];
   }
 
   appendChild(child: any) {
-    this.internalDom.push(child);
+    this.children.push(child);
   }
 
   layoutHorizontalContent(singleRow: RowLayout, parentWidth = this.windowSize.x) : string | string[] {
@@ -118,37 +118,16 @@ export class ConsoleRender extends CenterConsole {
   }
 
   finalRender() {
-    const rootElement = this.internalDom[0];
-    const elementsToRender : RowLayout[] = rootElement.internalDom.map(flattenElements);
+    const rootElement = this.children[0];
+    const elementsToRender : RowLayout[] = rootElement.children.map(flattenElements);
     const columnsRendered = elementsToRender.map((row) => this.layoutHorizontalContent(row));
     const rowsRendered : string[][] = elementsToRender.map((row, index) => this.layoutVerticalContent(row, columnsRendered[index]));
     console.clear();
     rowsRendered.map((row) => row.map((val) => console.log(val)));
-    this.internalDom = [];
+    this.children = [];
   }
 
   display(input : any) {
     render(input, this);
-  }
-}
-
-declare global {
-  interface ConsoleDiv {
-    alignSelf?: 'top' | 'center' | 'bottom'
-    alignContent?: 'left' | 'center' | 'right'
-    height?: number
-  }
-  interface ConsoleSpan {
-    alignSelf?: 'top' | 'center' | 'bottom'
-    alignContent?: 'left' | 'center' | 'right'
-    height?: number
-    width?: number
-  }
-  namespace JSX {
-    interface IntrinsicElements {
-      main: {}
-      div: ConsoleDiv
-      span: ConsoleSpan
-    }
   }
 }

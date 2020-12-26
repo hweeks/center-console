@@ -6,9 +6,8 @@ module.exports = {
     [
       '@babel/plugin-transform-react-jsx',
       {
-        throwIfNamespace: false, // defaults to true
-        runtime: 'automatic', // defaults to classic
-        importSource: path.resolve(__dirname, './lib/runtime'), // defaults to react
+        runtime: 'automatic',
+        importSource: path.resolve(__dirname, './lib/runtime'),
       },
     ],
   ],

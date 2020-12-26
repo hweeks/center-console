@@ -1,25 +1,22 @@
 /* eslint-disable prefer-object-spread */
 
-class ConsoleElement {
-  internalDom: any
+import { ConsoleRender } from '../render';
+import ConsoleElement, { ValidProperties } from '../element';
 
-  constructor() {
-    this.internalDom = [];
-  }
-
-  appendChild(child: any) {
-    this.internalDom.push(child);
+export interface ElementInput {
+  props: {
+    [value: string]: any
+    children: ElementInput[]
   }
 }
 
-function createTextNode(text: string) {
-  const castedText = `${text}`
+function createTextNode(text: string) : ElementInput {
+  const castedText = `${text}`;
   return {
-    type: 'TEXT_ELEMENT',
     props: {
       nodeValue: castedText,
       children: [],
-      nodeLength: castedText.length
+      nodeLength: castedText.length,
     },
   };
 }
@@ -39,15 +36,15 @@ function jsx(type: unknown, config: {props:unknown, children?:never[]}) {
   };
 }
 
-function render(element: any, container: any) {
-  const innerContainer = new ConsoleElement() as any;
+function render(element: ElementInput, container: ConsoleElement | ConsoleRender) {
+  const innerContainer = new ConsoleElement();
   const isProperty = (key: string) => key !== 'children';
   Object.keys(element.props)
     .filter(isProperty)
     .forEach((name) => {
-      innerContainer[name] = element.props[name];
+      innerContainer.set(name as ValidProperties, element.props[name]);
     });
-  element.props.children.forEach((child: any) => render(child, innerContainer));
+  element.props.children.forEach((child) => render(child, innerContainer));
   container.appendChild(innerContainer);
   if (container.finalRender) container.finalRender();
 }

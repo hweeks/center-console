@@ -1,6 +1,6 @@
-import { ConsoleRender } from '../render';
+import ConsoleRender from '../';
 
-const multiLine = `animation
+const multiLine = `text
 and
 lines`;
 
@@ -22,5 +22,5 @@ const Splash = ({ date }: {date: any}) => <main>
 const someDom = new ConsoleRender();
 
 setInterval(() => {
-  someDom.display(<Splash date={Math.random()}/>);
+  someDom.display(<Splash date={Date.now()}/>);
 }, 120);

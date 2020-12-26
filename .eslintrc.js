@@ -15,5 +15,12 @@ module.exports = {
     '@typescript-eslint',
   ],
   rules: {
+    'linebreak-style': 0,
+    'import/extensions': 0
+  },
+  settings: {
+    'import/resolver': {
+      typescript: {},
+    },
   },
 };

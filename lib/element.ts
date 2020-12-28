@@ -28,4 +28,8 @@ export default class ConsoleElement {
   appendChild(child: any) {
     this.children.push(child);
   }
+
+  removeChild(child) {
+    this.children = this.children.filter(innerChild => innerChild === child);
+  }
 }

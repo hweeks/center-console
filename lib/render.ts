@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import CenterConsole, { AlignmentChoices, LayoutChoices } from './center-console';
-import { render } from './runtime/jsx-runtime';
+import { render } from './runtime/c-dom';
 
 export interface RowInternalLayout {
   textValue: string
@@ -55,10 +55,15 @@ export class ConsoleRender extends CenterConsole {
   constructor(align?: AlignmentChoices) {
     super(align || 'center');
     this.children = [];
+    setInterval(() => this.maybeRender(), 50);
   }
 
   appendChild(child: any) {
     this.children.push(child);
+  }
+
+  maybeRender() {
+    if (this.children.length > 0) this.finalRender();
   }
 
   layoutHorizontalContent(singleRow: RowLayout, parentWidth = this.windowSize.x) : string | string[] {
@@ -118,16 +123,17 @@ export class ConsoleRender extends CenterConsole {
   }
 
   finalRender() {
+    debugger
     const rootElement = this.children[0];
     const elementsToRender : RowLayout[] = rootElement.children.map(flattenElements);
     const columnsRendered = elementsToRender.map((row) => this.layoutHorizontalContent(row));
     const rowsRendered : string[][] = elementsToRender.map((row, index) => this.layoutVerticalContent(row, columnsRendered[index]));
     console.clear();
     rowsRendered.map((row) => row.map((val) => console.log(val)));
-    this.children = [];
   }
 
   display(input : any) {
+    debugger
     render(input, this);
   }
 }

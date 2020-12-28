@@ -2,6 +2,7 @@
 
 import { ConsoleRender } from '../render';
 import ConsoleElement, { ValidProperties } from '../element';
+import {createElement, render} from "./c-dom";
 
 export interface ElementInput {
   props: {
@@ -36,7 +37,7 @@ function jsx(type: unknown, config: {props:unknown, children?:never[]}) {
   };
 }
 
-function render(element: ElementInput, container: ConsoleElement | ConsoleRender) {
+function render2(element: ElementInput, container: ConsoleElement | ConsoleRender) {
   const innerContainer = new ConsoleElement();
   const isProperty = (key: string) => key !== 'children';
   Object.keys(element.props)
@@ -49,4 +50,4 @@ function render(element: ElementInput, container: ConsoleElement | ConsoleRender
   if (container.finalRender) container.finalRender();
 }
 
-export { jsx as jsxs, render, jsx };
+export { createElement as jsxs, render, createElement as jsx };

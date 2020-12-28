@@ -11,7 +11,7 @@
     "lint": "eslint --ext .ts ./lib",
     "dev": "ts-node-dev --inspect-brk --respawn ./lib/index.ts",
     "dev:brk": "nodemon -e ts,tsx --exec yarn bbb",
-    "bbb": "babel-node --extensions \".js,.ts,.tsx\"",
+    "bbb": "babel-node --inspect-brk --extensions \".js,.ts,.tsx\"",
     "prepublishOnly": "tsc"
   },
   "devDependencies": {

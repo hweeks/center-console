@@ -51,19 +51,15 @@ function flattenElements(rowValue : any) : RowLayout {
 
 export class ConsoleRender extends CenterConsole {
   children: any
+  rootElement?: any
 
   constructor(align?: AlignmentChoices) {
     super(align || 'center');
     this.children = [];
-    setInterval(() => this.maybeRender(), 50);
   }
 
   appendChild(child: any) {
     this.children.push(child);
-  }
-
-  maybeRender() {
-    if (this.children.length > 0) this.finalRender();
   }
 
   layoutHorizontalContent(singleRow: RowLayout, parentWidth = this.windowSize.x) : string | string[] {
@@ -123,17 +119,32 @@ export class ConsoleRender extends CenterConsole {
   }
 
   finalRender() {
-    debugger
     const rootElement = this.children[0];
+    if (rootElement.self?.setParent) {
+      rootElement.self.setParent(this)
+    }
     const elementsToRender : RowLayout[] = rootElement.children.map(flattenElements);
     const columnsRendered = elementsToRender.map((row) => this.layoutHorizontalContent(row));
     const rowsRendered : string[][] = elementsToRender.map((row, index) => this.layoutVerticalContent(row, columnsRendered[index]));
+    debugger
     console.clear();
     rowsRendered.map((row) => row.map((val) => console.log(val)));
   }
 
-  display(input : any) {
+  display(input: any, mightBeChildRender = false) {
     debugger
-    render(input, this);
+    if (!input) {
+      throw new Error('You can not trigger a render if you have nothing to render anything')
+     } else if (input && this.rootElement) {
+       if (this.rootElement !== input) {
+        this.rootElement = input;
+        render(input, this);
+        this.finalRender();
+       }
+     } else {
+      this.rootElement = input;
+      render(input, this);
+      this.finalRender();
+    }
   }
 }

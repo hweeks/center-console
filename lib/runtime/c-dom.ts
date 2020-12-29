@@ -1,32 +1,38 @@
 import ConsoleRender from "..";
+import Component from "../component";
 import ConsoleElement, { ValidProperties } from "../element";
 import { ElementInput } from "./jsx-runtime";
 
-const isEvent = (key) => key.startsWith('on');
-const isProperty = (key) => key !== 'children' && !isEvent(key);
-const isNew = (prev, next) => (key) => prev[key] !== next[key];
-const isGone = (prev, next) => (key) => !(key in next);
+const isEvent = (key : string) => key.startsWith('on');
+const isProperty = (key: string) => key !== 'children' && !isEvent(key);
+const isNew = (prev : Record<string, unknown>, next : Record<string, unknown>) => (key : string) => prev[key] !== next[key];
+const isGone = (prev : Record<string, unknown>, next : Record<string, unknown>) => (key : string) => !(key in next);
 
-let nextUnitOfWork = null;
-let currentRoot = null;
-let wipRoot = null;
-let deletions = null;
-let wipFiber = null;
-let hookIndex = null;
+let nextUnitOfWork : FiberOrNull = null;
+let currentRoot : FiberOrNull = null;
+let wipRoot : FiberOrNull = null;
+let deletions : FiberOrNull[] = [];
+let wipFiber : FiberOrNull = null;
+let hookIndex = 0;
 
-export function createElement(type: unknown, config: {props:unknown, children?:never[]}) {
-  if (typeof type === 'function') {
-    return type(config);
+export function createElement(type: string | typeof Component, config: {props:Record<string, unknown>, children?:JSX.IntrinsicElements[]}) {
+  debugger
+  if (typeof type === 'string') {
+    const { children = [], ...props } = config;
+    const childrenProps = [].concat(children as any);
+    return {
+      type,
+      props: {
+        ...props,
+        children: childrenProps.map((child) => (typeof child === 'object' ? child : createTextNode(child))),
+      },
+    };
+  } else {
+    const baseClass = new type(config.props, config.children)
+    const newJsx = {...baseClass.render()};
+    newJsx.props.self = baseClass;
+    return newJsx;
   }
-  const { children = [], ...props } = config;
-  const childrenProps = [].concat(children);
-  return {
-    type,
-    props: {
-      ...props,
-      children: childrenProps.map((child) => (typeof child === 'object' ? child : createTextNode(child))),
-    },
-  };
 }
 
 function createTextNode(text: string) : ElementInput {
@@ -40,37 +46,22 @@ function createTextNode(text: string) : ElementInput {
   };
 }
 
-function createDom(fiber) {
+function createDom(fiber: Fiber) {
   const dom = new ConsoleElement();
-  updateDom(dom, {}, fiber.props);
+  updateDom(dom, {}, fiber.props as Record<keyof ConsoleElement, any>);
   return dom;
 }
 
-function updateDom(dom, prevProps, nextProps) {
-  // Remove old or changed event listeners
-  // Object.keys(prevProps)
-  //   .filter(isEvent)
-  //   .filter(
-  //     (key) => !(key in nextProps)
-  //       || isNew(prevProps, nextProps)(key),
-  //   )
-  //   .forEach((name) => {
-  //     const eventType = name
-  //       .toLowerCase()
-  //       .substring(2);
-  //     dom.removeEventListener(
-  //       eventType,
-  //       prevProps[name],
-  //     );
-  //   });
+type MaybeProp = Record<keyof ConsoleElement, any> | Record<string, unknown>
+
+function updateDom(dom : ConsoleElement, prevProps : MaybeProp, nextProps : MaybeProp) {
 
   // Remove old properties
   Object.keys(prevProps)
     .filter(isProperty)
     .filter(isGone(prevProps, nextProps))
     .forEach((name) => {
-      debugger
-      dom.set(name as ValidProperties, null);
+      dom.set(name as ValidProperties, null as any);
     });
 
   // Set new or changed properties
@@ -78,37 +69,23 @@ function updateDom(dom, prevProps, nextProps) {
     .filter(isProperty)
     .filter(isNew(prevProps, nextProps))
     .forEach((name) => {
-      dom.set(name as ValidProperties, nextProps[name]);
+      dom.set(name as ValidProperties, nextProps[name as ValidProperties]);
     });
-
-  // Add event listeners
-  // Object.keys(nextProps)
-  //   .filter(isEvent)
-  //   .filter(isNew(prevProps, nextProps))
-  //   .forEach((name) => {
-  //     const eventType = name
-  //       .toLowerCase()
-  //       .substring(2);
-  //     dom.addEventListener(
-  //       eventType,
-  //       nextProps[name],
-  //     );
-  //   });
 }
 
 function commitRoot() {
   deletions.forEach(commitWork);
-  commitWork(wipRoot.child);
+  commitWork(wipRoot?.child || null);
   currentRoot = wipRoot;
   wipRoot = null;
 }
 
-function commitWork(fiber) {
+function commitWork(fiber: FiberOrNull) {
   if (!fiber) return;
 
   let domParentFiber = fiber.parent;
-  while (!domParentFiber.dom) {
-    domParentFiber = domParentFiber.parent;
+  while (!domParentFiber?.dom) {
+    domParentFiber = domParentFiber?.parent;
   }
   const domParent = domParentFiber.dom;
   if (
@@ -122,27 +99,42 @@ function commitWork(fiber) {
   ) {
     updateDom(
       fiber.dom,
-      fiber.alternate.props,
-      fiber.props,
+      fiber?.alternate?.props || {},
+      fiber?.props || {},
     );
-    debugger
   } else if (fiber.effectTag === 'DELETION') {
     commitDeletion(fiber, domParent);
   }
 
-  commitWork(fiber.child);
-  commitWork(fiber.sibling);
+  commitWork(fiber.child || null);
+  commitWork(fiber.sibling || null);
 }
 
-function commitDeletion(fiber, domParent) {
+function commitDeletion(fiber: Fiber, domParent: ConsoleElement) {
   if (fiber.dom) {
     domParent.removeChild(fiber.dom);
   } else {
-    commitDeletion(fiber.child, domParent);
+    commitDeletion(fiber.child as Fiber, domParent);
   }
 }
 
-export function render(element : ElementInput, container: ConsoleElement | ConsoleRender) {
+interface Fiber {
+  type: (props: unknown) => ConsoleElement | string
+  dom: ConsoleElement
+  effectTag?: string
+  props: {
+    [key: string]: unknown,
+    children?: [ElementInput]
+  },
+  child?: Fiber,
+  parent?: Fiber
+  sibling?: Fiber
+  alternate: FiberOrNull,
+}
+
+type FiberOrNull = Fiber | null;
+
+export function render(element : ElementInput, container: ConsoleElement) {
   wipRoot = {
     dom: container,
     props: {
@@ -160,7 +152,7 @@ function workLoop() {
   while (nextUnitOfWork && !shouldYield) {
     nextUnitOfWork = performUnitOfWork(
       nextUnitOfWork,
-    );
+    ) as FiberOrNull;
     shouldYield = !nextUnitOfWork
   }
 
@@ -171,7 +163,7 @@ function workLoop() {
   setImmediate(workLoop);
 }
 
-function performUnitOfWork(fiber) {
+function performUnitOfWork(fiber: Fiber) {
   const isFunctionComponent = fiber.type instanceof Function;
   if (isFunctionComponent) {
     updateFunctionComponent(fiber);
@@ -182,11 +174,11 @@ function performUnitOfWork(fiber) {
   let nextFiber = fiber;
   while (nextFiber) {
     if (nextFiber.sibling) return nextFiber.sibling;
-    nextFiber = nextFiber.parent;
+    nextFiber = nextFiber.parent as Fiber;
   }
 }
 
-function updateFunctionComponent(fiber) {
+function updateFunctionComponent(fiber : Fiber) {
   wipFiber = fiber;
   hookIndex = 0;
   wipFiber.hooks = [];
@@ -194,44 +186,44 @@ function updateFunctionComponent(fiber) {
   reconcileChildren(fiber, children);
 }
 
-export function useState(initial) {
-  const oldHook = wipFiber && wipFiber.alternate
-    && wipFiber.alternate.hooks
-    && wipFiber.alternate.hooks[hookIndex];
-  const hook = {
-    state: oldHook ? oldHook.state : initial,
-    queue: [],
-  };
+// export function useState(initial) {
+//   const oldHook = wipFiber && wipFiber.alternate
+//     && wipFiber.alternate.hooks
+//     && wipFiber.alternate.hooks[hookIndex];
+//   const hook = {
+//     state: oldHook ? oldHook.state : initial,
+//     queue: [],
+//   };
 
-  const actions = oldHook ? oldHook.queue : [];
-  actions.forEach((action) => {
-    hook.state = action(hook.state);
-  });
+//   const actions = oldHook ? oldHook.queue : [];
+//   actions.forEach((action) => {
+//     hook.state = action(hook.state);
+//   });
 
-  const setState = (action) => {
-    hook.queue.push(action);
-    wipRoot = {
-      dom: currentRoot.dom,
-      props: currentRoot.props,
-      alternate: currentRoot,
-    };
-    nextUnitOfWork = wipRoot;
-    deletions = [];
-  };
+//   const setState = (action) => {
+//     hook.queue.push(action);
+//     wipRoot = {
+//       dom: currentRoot.dom,
+//       props: currentRoot.props,
+//       alternate: currentRoot,
+//     };
+//     nextUnitOfWork = wipRoot;
+//     deletions : FiberOrNull[] = [];
+//   };
 
-  wipFiber.hooks.push(hook);
-  hookIndex++;
-  return [hook.state, setState];
-}
+//   wipFiber.hooks.push(hook);
+//   hookIndex++;
+//   return [hook.state, setState];
+// }
 
-function updateHostComponent(fiber) {
+function updateHostComponent(fiber : Fiber) {
   if (!fiber.dom) {
     fiber.dom = createDom(fiber);
   }
   reconcileChildren(fiber, fiber.props.children);
 }
 
-function reconcileChildren(innerFiber, elements) {
+function reconcileChildren(innerFiber : Fiber, elements : ConsoleElement[]) {
   let index = 0;
   let oldFiber = innerFiber.alternate && innerFiber.alternate.child;
   let prevSibling = null;
@@ -247,7 +239,7 @@ function reconcileChildren(innerFiber, elements) {
       && element.type == oldFiber.type;
     if (sameType) {
       newFiber = {
-        type: oldFiber.type,
+        type: oldFiber?.type,
         props: element.props,
         dom: oldFiber.dom,
         parent: innerFiber,

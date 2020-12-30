@@ -1,4 +1,4 @@
-import { EventEmitter } from "events";
+import { EventEmitter } from 'events';
 
 class CDomScheduler extends EventEmitter {
   needYield: boolean
@@ -6,22 +6,24 @@ class CDomScheduler extends EventEmitter {
   constructor(...args : any[]) {
     super(...args);
     this.needYield = false;
-    this.setupYield()
+    this.setupYield();
   }
+
   setupYield() {
     this.on('interrupt', () => {
-      this.needYield = true
-    })
+      this.needYield = true;
+    });
     this.on('continue', () => {
-      this.needYield = false
-    })
+      this.needYield = false;
+    });
   }
+
   shouldYield() : boolean {
-    return this.needYield
+    return this.needYield;
   }
 }
 
 // https://futurama.fandom.com/wiki/Jor-El
-const JOREL = new CDomScheduler()
+const JOREL = new CDomScheduler();
 
 export default JOREL;

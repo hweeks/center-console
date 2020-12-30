@@ -2,7 +2,7 @@
 import CenterConsole, { AlignmentChoices, LayoutChoices } from './center-console';
 import { render } from './runtime/c-dom';
 import { JSXConfig } from './runtime/c-dom-types';
-import JOREL from './scheduler'
+import JOREL from './scheduler';
 
 export interface RowInternalLayout {
   textValue: string
@@ -67,7 +67,7 @@ export class ConsoleRender extends CenterConsole {
         children: [],
       },
     };
-    JOREL.on('update', () => this.display())
+    JOREL.on('update', () => this.display());
   }
 
   appendChild(child: any) {

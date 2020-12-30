@@ -1,4 +1,5 @@
 import ConsoleElement from '../element';
+import JOREL from '../scheduler';
 import {
   FiberOrNull, TypeTypes, TypesAsClass, Fiber, JSXFactoryConfig, TypesAsFunction, MaybeProp, JSXConfig,
 } from './c-dom-types';
@@ -24,11 +25,22 @@ const whatTypeIsThis = (typeToCheck: TypeTypes) => {
   return 'function';
 };
 
+const buildChildNodes = (children : JSXFactoryConfig['children']) => {
+  if (Array.isArray(children)) {
+    const oopsAllStrings : boolean = children.some((child : string | JSXConfig) => typeof child !== 'object');
+    if (oopsAllStrings) {
+      return [createTextNode(children.join(''))];
+    }
+    return children as JSXConfig[];
+  }
+  return [createTextNode(children)];
+};
+
 export function createElement(type: TypeTypes, config: JSXFactoryConfig) : JSXConfig {
   const typeToHandle = whatTypeIsThis(type);
   if (typeToHandle === 'string') {
     const { children, ...props } = config;
-    const textNodeOrChildNodes = !Array.isArray(children) ? [createTextNode(children)] : children;
+    const textNodeOrChildNodes = buildChildNodes(children);
     const elementSubProps = {
       type: type as string,
       props: {
@@ -37,9 +49,10 @@ export function createElement(type: TypeTypes, config: JSXFactoryConfig) : JSXCo
       },
     };
     return elementSubProps;
-  } if (typeToHandle === 'class') {
+  }
+  if (typeToHandle === 'class') {
     const { children, ...props } = config;
-    const textNodeOrChildNodes = !Array.isArray(children) ? [createTextNode(children)] : children;
+    const textNodeOrChildNodes = buildChildNodes(children);
     const baseClass = new (type as TypesAsClass)(props, textNodeOrChildNodes);
     const newJsx = { ...baseClass.renderClean() } as JSXConfig;
     newJsx.type = type;
@@ -168,7 +181,7 @@ function workLoop() {
     nextUnitOfWork = performUnitOfWork(
       nextUnitOfWork,
     );
-    shouldYield = !nextUnitOfWork;
+    shouldYield = JOREL.shouldYield();
   }
 
   if (!nextUnitOfWork && wipRoot) {
@@ -202,36 +215,6 @@ function updateFunctionComponent(fiber : Fiber) {
   const children = [builtChild];
   reconcileChildren(fiber, children);
 }
-
-// export function useState(initial) {
-//   const oldHook = wipFiber && wipFiber.alternate
-//     && wipFiber.alternate.hooks
-//     && wipFiber.alternate.hooks[hookIndex];
-//   const hook = {
-//     state: oldHook ? oldHook.state : initial,
-//     queue: [],
-//   };
-
-//   const actions = oldHook ? oldHook.queue : [];
-//   actions.forEach((action) => {
-//     hook.state = action(hook.state);
-//   });
-
-//   const setState = (action) => {
-//     hook.queue.push(action);
-//     wipRoot = {
-//       dom: currentRoot.dom,
-//       props: currentRoot.props,
-//       alternate: currentRoot,
-//     };
-//     nextUnitOfWork = wipRoot;
-//     deletions : FiberOrNull[] = [];
-//   };
-
-//   wipFiber.hooks.push(hook);
-//   hookIndex++;
-//   return [hook.state, setState];
-// }
 
 function updateHostComponent(fiber : Fiber) {
   if (!fiber.dom) {

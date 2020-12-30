@@ -1,6 +1,6 @@
 import { JSXConfig } from './runtime/c-dom-types';
 import { ElementInput } from './runtime/jsx-runtime';
-import JOREL from './scheduler'
+import JOREL from './scheduler';
 
 class Component {
   computedValue: JSXConfig | null
@@ -25,7 +25,7 @@ class Component {
     if (stateUpdate) {
       this.state = newState;
       this.isDirty = true;
-      JOREL.emit('update')
+      JOREL.emit('update');
     }
   }
 

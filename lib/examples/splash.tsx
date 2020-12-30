@@ -12,15 +12,18 @@ const MultiDiv = ({children} : {children: string}) => <div alignContent="center"
 class StatefulSplash extends Component {
   interval?: NodeJS.Timer
 
+  startTime: number
+
   constructor(...props) {
     super(...props)
     this.interval = null
     this.state = {
-      date: Date.now()
+      date: 0
     }
+    this.startTime = Date.now()
     this.interval = setInterval(() => {
       this.setState({
-        date: Date.now()
+        date: Date.now() - this.startTime
       })
     },1000)
   }
@@ -30,7 +33,7 @@ class StatefulSplash extends Component {
     return <main>
       <div alignSelf='top' height={25}>
         <span alignContent="left" width={75}>logo</span>
-        <span alignContent="right" width={25}>{date}</span>
+        <span alignContent="right" width={25}>running for {date}ms</span>
       </div>
       <MultiDiv>{multiLine}</MultiDiv>
       <div alignSelf="bottom" height={25}>

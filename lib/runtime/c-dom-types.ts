@@ -22,7 +22,7 @@ export interface JSXConfig {
 
 export interface JSXFactoryConfig {
   [key: string]: unknown
-  children: JSXConfig[] | string
+  children: JSXConfig[] | string | string[]
 }
 
 export type MaybeProp = Record<string, any>

@@ -2,6 +2,7 @@
 import CenterConsole, { AlignmentChoices, LayoutChoices } from './center-console';
 import { render } from './runtime/c-dom';
 import { JSXConfig } from './runtime/c-dom-types';
+import JOREL from './scheduler'
 
 export interface RowInternalLayout {
   textValue: string
@@ -21,9 +22,6 @@ export interface RowLayout {
 }
 
 function flattenElements(rowValue : JSXConfig, renderInstance: ConsoleRender) : RowLayout {
-  if (rowValue.props.self && rowValue.props.self.setParent) {
-    rowValue.props.self.setParent(renderInstance);
-  }
   const alignment = rowValue.props.alignContent || 'center';
   const widthModifier = rowValue.props.width ? rowValue.props.width / 100 : undefined;
   const heightModifier = rowValue.props.height ? rowValue.props.height / 100 : undefined;
@@ -69,6 +67,7 @@ export class ConsoleRender extends CenterConsole {
         children: [],
       },
     };
+    JOREL.on('update', () => this.display())
   }
 
   appendChild(child: any) {

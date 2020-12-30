@@ -1,5 +1,6 @@
 import { JSXConfig } from './runtime/c-dom-types';
 import { ElementInput } from './runtime/jsx-runtime';
+import JOREL from './scheduler'
 
 class Component {
   computedValue: JSXConfig | null
@@ -9,8 +10,6 @@ class Component {
   state?: Record<string, unknown>
 
   props?: Record<string, unknown>
-
-  parent?: any | null
 
   children?: ElementInput[]
 
@@ -26,12 +25,8 @@ class Component {
     if (stateUpdate) {
       this.state = newState;
       this.isDirty = true;
-      this.parent?.display();
+      JOREL.emit('update')
     }
-  }
-
-  setParent(parent?: Component['parent']) {
-    this.parent = parent;
   }
 
   renderClean() : JSXConfig | null {

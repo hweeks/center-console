@@ -5,6 +5,10 @@ const multiLine = `text
 and
 lines`;
 
+const MultiDiv = ({children} : {children: string}) => <div alignContent="center" alignSelf='center' height={50}>
+  {children}
+</div>
+
 class StatefulSplash extends Component {
   interval?: NodeJS.Timer
 
@@ -28,9 +32,7 @@ class StatefulSplash extends Component {
         <span alignContent="left" width={75}>logo</span>
         <span alignContent="right" width={25}>{date}</span>
       </div>
-      <div alignContent="center" alignSelf='center' height={50}>
-        {multiLine}
-      </div>
+      <MultiDiv>{multiLine}</MultiDiv>
       <div alignSelf="bottom" height={25}>
         <span alignContent="left" width={33}>left</span>
         <span alignContent="center" width={33}>right</span>

@@ -1,7 +1,8 @@
-import ConsoleRender from "."
+import { JSXConfig } from './runtime/c-dom-types';
+import { ElementInput } from './runtime/jsx-runtime';
 
 class Component {
-  computedValue: string
+  computedValue: JSXConfig | null
 
   isDirty: boolean
 
@@ -11,29 +12,38 @@ class Component {
 
   parent?: any | null
 
-  children?: JSX.IntrinsicElements[]
+  children?: ElementInput[]
 
   constructor(props?: Component['props'], children?: Component['children']) {
-    this.computedValue = '';
+    this.computedValue = null;
     this.isDirty = true;
     this.props = props || {};
-    this.children = children
+    this.children = children;
   }
 
   setState(stateUpdate: Partial<Component['state']>) {
-    const newState = {...this.state, ...stateUpdate}
+    const newState = { ...this.state, ...stateUpdate };
     if (stateUpdate) {
       this.state = newState;
       this.isDirty = true;
-      this.parent?.display(this.render());
+      this.parent?.display();
     }
   }
 
   setParent(parent?: Component['parent']) {
-    this.parent = parent
+    this.parent = parent;
   }
 
-  render() : any | null {
+  renderClean() : JSXConfig | null {
+    if (!this.isDirty) {
+      return this.computedValue;
+    }
+    this.isDirty = false;
+    this.computedValue = this.render();
+    return this.computedValue;
+  }
+
+  render() : JSXConfig | null {
     return null;
   }
 }

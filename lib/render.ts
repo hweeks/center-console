@@ -1,3 +1,5 @@
+/* eslint-disable no-use-before-define */
+/* eslint-disable no-console */
 /* eslint-disable max-len */
 import CenterConsole, { AlignmentChoices, LayoutChoices } from './center-console';
 import { render } from './runtime/c-dom';

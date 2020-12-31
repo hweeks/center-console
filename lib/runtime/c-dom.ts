@@ -1,20 +1,30 @@
+/* eslint-disable no-plusplus */
+/* eslint-disable no-param-reassign */
+/* eslint-disable no-use-before-define */
 import ConsoleElement from '../element';
 import JOREL from '../scheduler';
 import {
-  FiberOrNull, TypeTypes, TypesAsClass, Fiber, JSXFactoryConfig, TypesAsFunction, MaybeProp, JSXConfig,
+  Fiber,
+  TypeTypes,
+  TypesAsClass,
+  JSXFactoryConfig,
+  TypesAsFunction,
+  MaybeProp,
+  JSXConfig,
 } from './c-dom-types';
+
+type Proppy = Record<string, unknown>
 
 const isEvent = (key : string) => key.startsWith('on');
 const isProperty = (key: string) => key !== 'children' && !isEvent(key);
-const isNew = (prev : Record<string, unknown>, next : Record<string, unknown>) => (key : string) => prev[key] !== next[key];
-const isGone = (prev : Record<string, unknown>, next : Record<string, unknown>) => (key : string) => !(key in next);
+const isNew = (prev : Proppy, next : Proppy) => (key : string) => prev[key] !== next[key];
+const isGone = (prev : Proppy, next : Proppy) => (key : string) => !(key in next);
 
-let nextUnitOfWork : FiberOrNull = null;
-let currentRoot : FiberOrNull = null;
-let wipRoot : FiberOrNull = null;
-let deletions : FiberOrNull[] = [];
-let wipFiber : FiberOrNull = null;
-let hookIndex = 0;
+let nextUnitOfWork : Fiber | undefined;
+let currentRoot : Fiber | undefined;
+let wipRoot : Fiber | undefined;
+let deletions : Fiber[] = [];
+let wipFiber : Fiber;
 
 const whatTypeIsThis = (typeToCheck: TypeTypes) => {
   if (typeof typeToCheck === 'string') {
@@ -109,12 +119,12 @@ function updateDom(dom : JSXConfig, prevProps : MaybeProp, nextProps : MaybeProp
 
 function commitRoot() {
   deletions.forEach(commitWork);
-  commitWork(wipRoot?.child || null);
+  commitWork(wipRoot?.child);
   currentRoot = wipRoot;
-  wipRoot = null;
+  wipRoot = undefined;
 }
 
-function commitWork(fiber: FiberOrNull) {
+function commitWork(fiber?: Fiber) {
   if (!fiber) return;
 
   let domParentFiber = fiber.parent;
@@ -124,14 +134,14 @@ function commitWork(fiber: FiberOrNull) {
   const domParent = domParentFiber.dom;
   if (
     fiber.effectTag === 'PLACEMENT'
-    && fiber.dom != null
+    && fiber.dom !== undefined
   ) {
-    if (domParent.props.children.length < 1) {
+    if (domParent.props.children.length < 1 && fiber.dom) {
       domParent.props.children.push(fiber.dom);
     }
   } else if (
     fiber.effectTag === 'UPDATE'
-    && fiber.dom != null
+    && fiber.dom !== undefined
   ) {
     updateDom(
       fiber.dom,
@@ -142,8 +152,8 @@ function commitWork(fiber: FiberOrNull) {
     commitDeletion(fiber, domParent);
   }
 
-  commitWork(fiber.child || null);
-  commitWork(fiber.sibling || null);
+  commitWork(fiber.child);
+  commitWork(fiber.sibling);
 }
 
 function commitDeletion(fiber: Fiber, domParent: JSXConfig) {
@@ -166,9 +176,6 @@ export function render(element : JSXConfig, container: JSXConfig) {
       children: [element],
     },
     alternate: currentRoot,
-    child: null,
-    parent: null,
-    sibling: null,
   };
   deletions = [];
   nextUnitOfWork = wipRoot;
@@ -191,7 +198,7 @@ function workLoop() {
   setImmediate(workLoop);
 }
 
-function performUnitOfWork(fiber: Fiber) : FiberOrNull {
+function performUnitOfWork(fiber: Fiber) : Fiber | undefined {
   const imOfThisType = whatTypeIsThis(fiber.type);
   if (imOfThisType === 'function') {
     updateFunctionComponent(fiber);
@@ -199,17 +206,16 @@ function performUnitOfWork(fiber: Fiber) : FiberOrNull {
     updateHostComponent(fiber);
   }
   if (fiber.child) return fiber.child;
-  let nextFiber : FiberOrNull = fiber;
+  let nextFiber : Fiber | undefined = fiber;
   while (nextFiber) {
     if (nextFiber.sibling) return nextFiber.sibling;
     nextFiber = nextFiber.parent;
   }
-  return null;
+  return undefined;
 }
 
 function updateFunctionComponent(fiber : Fiber) {
   wipFiber = fiber;
-  hookIndex = 0;
   wipFiber.hooks = [];
   const builtChild = (fiber.type as TypesAsFunction)(fiber.props);
   const children = [builtChild];
@@ -226,27 +232,25 @@ function updateHostComponent(fiber : Fiber) {
 function reconcileChildren(innerFiber : Fiber, elements : JSXConfig[]) {
   let index = 0;
   let oldFiber = innerFiber.alternate && innerFiber.alternate.child;
-  let prevSibling = null;
+  let prevSibling : Fiber | undefined;
   while (
     index < elements.length
-    || oldFiber != null
+    || oldFiber !== undefined
   ) {
     const element = elements[index];
-    let newFiber : FiberOrNull = null;
+    let newFiber : Fiber | undefined;
 
     const sameType = oldFiber
       && element
-      && element.type == oldFiber.type;
-    if (sameType) {
+      && element.type === oldFiber.type;
+    if (sameType && oldFiber) {
       newFiber = {
-        type: (oldFiber as Fiber).type,
+        type: oldFiber.type,
         props: element.props,
-        dom: (oldFiber as Fiber).dom,
+        dom: oldFiber.dom,
         parent: innerFiber,
         alternate: oldFiber,
         effectTag: 'UPDATE',
-        child: null,
-        sibling: null,
         hooks: [],
       };
     }
@@ -254,12 +258,8 @@ function reconcileChildren(innerFiber : Fiber, elements : JSXConfig[]) {
       newFiber = {
         type: element.type,
         props: element.props,
-        dom: null,
         parent: innerFiber,
-        alternate: null,
         effectTag: 'PLACEMENT',
-        child: null,
-        sibling: null,
         hooks: [],
       };
     }
@@ -272,10 +272,10 @@ function reconcileChildren(innerFiber : Fiber, elements : JSXConfig[]) {
       oldFiber = oldFiber.sibling;
     }
 
-    if (index === 0) {
+    if (index === 0 && newFiber) {
       innerFiber.child = newFiber;
-    } else if (element) {
-      (prevSibling as Fiber).sibling = newFiber as Fiber;
+    } else if (element && prevSibling) {
+      prevSibling.sibling = newFiber;
     }
 
     prevSibling = newFiber;

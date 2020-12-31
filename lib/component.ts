@@ -38,6 +38,7 @@ class Component {
     return this.computedValue;
   }
 
+  // eslint-disable-next-line class-methods-use-this
   render() : JSXConfig | null {
     return null;
   }

@@ -24,13 +24,13 @@ export interface RowLayout {
 }
 
 function flattenElements(rowValue : JSXConfig, renderInstance: ConsoleRender) : RowLayout {
-  const alignment = rowValue.props.alignContent || 'center';
   const widthModifier = rowValue.props.width ? rowValue.props.width / 100 : undefined;
   const heightModifier = rowValue.props.height ? rowValue.props.height / 100 : undefined;
   const layoutPosition = rowValue.props.alignSelf || 'center';
-  if (rowValue.props.children[0]?.props.nodeValue) {
-    const textValue = rowValue.props.children[0].props.nodeValue as string;
-    const textLength = rowValue.props.children[0].props.nodeLength as number;
+  if (rowValue.type === 'CONSOLE_TEXT') {
+    const textValue = rowValue.props.nodeValue as string;
+    const textLength = rowValue.props.nodeLength as number;
+    const alignment = rowValue.props.alignContent || rowValue.parent?.alignContent || 'center';
     return {
       content: {
         textValue,
@@ -76,7 +76,7 @@ export class ConsoleRender extends CenterConsole {
     this.children.push(child);
   }
 
-  layoutHorizontalContent(singleRow: RowLayout, parentWidth = this.windowSize.x) : string | string[] {
+  layoutHorizontalContent(singleRow: RowLayout, parentWidth = this.windowSize.x) : string[] {
     if (Array.isArray(singleRow.content)) {
       const contentLength = singleRow.content.length;
       const stringsBuilt = singleRow.content.map(
@@ -88,14 +88,27 @@ export class ConsoleRender extends CenterConsole {
           return this.layoutHorizontalContent(row, widthToDivide);
         },
       );
-      return stringsBuilt.join('');
+      const rowLength = this.windowSize.x;
+      let rowWidthRemainder = rowLength;
+      return stringsBuilt.reduce((acc, cur) => {
+        const currentStringLength = cur[0].length;
+        const lastItem = acc.pop();
+        const combinedWidth = (lastItem?.length || 0) + currentStringLength;
+        rowWidthRemainder -= currentStringLength;
+        if (currentStringLength !== rowLength && combinedWidth <= rowLength && rowWidthRemainder >= 0) {
+          const newString = [lastItem, cur[0]].join('');
+          if (rowWidthRemainder === 0) rowWidthRemainder = rowLength;
+          return [...acc, newString];
+        }
+        return [...acc, ...cur];
+      }, ['']);
     }
     const {
       textLength, alignment, textValue, widthModifier,
     } = singleRow.content;
     const blockSplit = textValue ? textValue.split('\n') : [];
     if (blockSplit.length > 1) {
-      const builtMultiRow = blockSplit.map((splitBlock) => {
+      return blockSplit.map((splitBlock) => {
         const subRow : RowInternalLayout = {
           textValue: splitBlock,
           alignment,
@@ -106,17 +119,17 @@ export class ConsoleRender extends CenterConsole {
           content: subRow,
           container: singleRow.container,
         };
-        return this.layoutHorizontalContent(subLayout, parentWidth);
+        return this.layoutHorizontalContent(subLayout, parentWidth)[0];
       });
-      return [...builtMultiRow] as string[];
     }
     const paddingLeft = this.getLeftPadding(textLength, alignment, parentWidth);
     const paddingRight = this.getRightPadding(textLength, alignment, parentWidth);
-    return [
+    const paddedString = [
       ...Array(paddingLeft).fill(' ').join(''),
       ...textValue,
       ...Array(paddingRight).fill(' ').join(''),
     ].join('');
+    return [paddedString];
   }
 
   layoutVerticalContent(singleRow: RowLayout, rowContent: string | string[], parentHeight = this.windowSize.y) {

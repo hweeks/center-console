@@ -37,6 +37,7 @@ export type MaybePropGeneric<InstanceProps> = Record<keyof InstanceProps, unknow
 
 export interface JSXConfig {
   type: TypeTypes,
+  parent?: JSXConfig['props']
   props: {
     [key: string]: unknown
     width?: number

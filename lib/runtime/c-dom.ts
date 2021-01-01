@@ -35,22 +35,21 @@ const whatTypeIsThis = (typeToCheck: TypeTypes) => {
   return 'function';
 };
 
-const buildChildNodes = (children : JSXFactoryConfig['children']) => {
+const buildChildNodes = (children : JSXFactoryConfig['children'], parentProps : Proppy) => {
   if (Array.isArray(children)) {
-    const oopsAllStrings : boolean = children.some((child : string | JSXConfig) => typeof child !== 'object');
-    if (oopsAllStrings) {
-      return [createTextNode(children.join(''))];
-    }
-    return children as JSXConfig[];
+    return (children as any[]).map((child : string | JSXConfig) : JSXConfig => {
+      if (typeof child !== 'object') return createTextNode(child, parentProps);
+      return child;
+    });
   }
-  return [createTextNode(children)];
+  return [createTextNode(children, parentProps)];
 };
 
 export function createElement(type: TypeTypes, config: JSXFactoryConfig) : JSXConfig {
   const typeToHandle = whatTypeIsThis(type);
   if (typeToHandle === 'string') {
     const { children, ...props } = config;
-    const textNodeOrChildNodes = buildChildNodes(children);
+    const textNodeOrChildNodes = buildChildNodes(children, props);
     const elementSubProps = {
       type: type as string,
       props: {
@@ -62,7 +61,7 @@ export function createElement(type: TypeTypes, config: JSXFactoryConfig) : JSXCo
   }
   if (typeToHandle === 'class') {
     const { children, ...props } = config;
-    const textNodeOrChildNodes = buildChildNodes(children);
+    const textNodeOrChildNodes = buildChildNodes(children, props);
     const baseClass = new (type as TypesAsClass)(props, textNodeOrChildNodes);
     const newJsx = { ...baseClass.renderClean() } as JSXConfig;
     newJsx.type = type;
@@ -74,11 +73,12 @@ export function createElement(type: TypeTypes, config: JSXFactoryConfig) : JSXCo
   return builtJsx;
 }
 
-function createTextNode(text: string) : JSXConfig {
+function createTextNode(text: string, parent: Proppy) : JSXConfig {
   const castedText = `${text}`;
   const height = castedText.split('\n').length;
   return {
     type: 'CONSOLE_TEXT',
+    parent: parent as JSXConfig['props'],
     props: {
       nodeValue: castedText,
       children: [],

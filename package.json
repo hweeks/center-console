@@ -3,23 +3,28 @@
   "version": "1.1.0",
   "description": "a tool to center console output",
   "main": "dist/index.js",
-  "typings": "dist/index.ts",
+  "typings": "dist/index.d.ts",
   "author": "hammie",
   "license": "WTFPL",
   "private": false,
   "scripts": {
     "lint": "eslint --ext .ts ./lib",
-    "dev": "ts-node-dev --inspect-brk --respawn ./lib/index.ts",
+    "dev": "nodemon -e ts,tsx --exec yarn bb",
     "dev:brk": "nodemon -e ts,tsx --exec yarn bbb",
     "bbb": "babel-node --inspect-brk --extensions \".js,.ts,.tsx\"",
-    "prepublishOnly": "tsc"
+    "bb": "babel-node --inspect --extensions \".js,.ts,.tsx\"",
+    "prepublishOnly": "tsc",
+    "commit": "cz"
   },
   "devDependencies": {
     "@babel/cli": "^7.12.10",
     "@babel/core": "^7.12.10",
     "@babel/node": "^7.12.10",
     "@babel/plugin-transform-react-jsx": "^7.12.12",
+    "@babel/preset-env": "^7.12.11",
     "@babel/preset-typescript": "^7.12.7",
+    "@commitlint/cli": "^11.0.0",
+    "@commitlint/config-conventional": "^11.0.0",
     "@semantic-release/changelog": "^5.0.1",
     "@semantic-release/commit-analyzer": "^8.0.1",
     "@semantic-release/git": "^9.0.0",
@@ -29,6 +34,8 @@
     "@types/node": "^14.14.16",
     "@typescript-eslint/eslint-plugin": "^4.11.0",
     "@typescript-eslint/parser": "^4.11.0",
+    "commitizen": "^4.2.2",
+    "cz-conventional-changelog": "^3.3.0",
     "eslint": "^7.16.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-import-resolver-typescript": "^2.3.0",
@@ -39,7 +46,5 @@
     "ts-node-dev": "^1.1.1",
     "typescript": "^4.1.3"
   },
-  "dependencies": {
-    "@babel/preset-env": "^7.12.11"
-  }
+  "dependencies": {}
 }

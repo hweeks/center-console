@@ -1,10 +1,11 @@
 /* eslint-disable no-unused-vars */
 import CenterConsole from './center-console';
+import Component from './component';
 import { ConsoleRender } from './render';
 
 export default ConsoleRender;
 
-export { CenterConsole, ConsoleRender };
+export { CenterConsole, ConsoleRender, Component };
 
 declare global {
   interface ConsoleDiv {

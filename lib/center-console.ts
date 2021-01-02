@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import os from 'os';
 
 export interface ScreenSize {

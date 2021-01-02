@@ -21,13 +21,14 @@ yarn add center-console
 thanks to babel and it's custom transform for jsx stuff, along with typescript support, we have been able to create a custom 'dom like' and 'react inspired' `c-dom`. Our render function relies on this 'createElement' function to build the children, and to use the fiber based dom processor.
 
 ```tsx
-import {ConsoleRender, Component} from 'center-console';
+import ConsoleRender from '..';
+import Component from '../component';
 
 const multiLine = `text
 and
 lines`;
 
-const MultiDiv = ({ children } : {children: string}) => <div alignContent="center" alignSelf='center' height={50}>
+const MultiDiv = ({ children } : {children: any}) : ConsoleDiv => <div alignContent="center" alignSelf='center' height={50}>
   {children}
 </div>;
 
@@ -38,7 +39,6 @@ class StatefulSplash extends Component {
 
   constructor(...props) {
     super(...props);
-    this.interval = null;
     this.state = {
       date: 0,
     };
@@ -55,8 +55,8 @@ class StatefulSplash extends Component {
     const runTime = `running for ${date}ms`;
     return <main>
       <div alignSelf='top' height={25}>
-        <span alignContent="left" width={75}>logo</span>
-        <span alignContent="right" width={25}>{runTime}</span>
+        <span alignContent="left" width={75} color='#2832c2' background='#ffff00'>logo</span>
+        <span alignContent="right" width={25} background='#ffff00'>{runTime}</span>
       </div>
       <MultiDiv>{multiLine}</MultiDiv>
       <div alignSelf="bottom" height={25}>
@@ -141,6 +141,10 @@ and make sure you make ts preserve jsx:
 there are like 4 props we accept. please use the JSX export this package provides to see what is useable.
 
 as of now you can basically break up the terminal into heights and widths by percent and control vertical/horizontal layouts.
+
+### color support
+
+you can add `color` or `background` to any element and we will pass the value you supply to the chalk hex function. we support text and background colors.
 
 ### old school api (still totally cool and very legal)
 

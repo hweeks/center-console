@@ -12,11 +12,10 @@ declare global {
     alignSelf?: 'top' | 'center' | 'bottom'
     alignContent?: 'left' | 'center' | 'right'
     height?: number
+    color?: string
+    background?: string
   }
-  interface ConsoleSpan {
-    alignSelf?: 'top' | 'center' | 'bottom'
-    alignContent?: 'left' | 'center' | 'right'
-    height?: number
+  interface ConsoleSpan extends ConsoleDiv{
     width?: number
   }
   namespace JSX {

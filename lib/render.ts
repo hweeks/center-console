@@ -1,6 +1,7 @@
 /* eslint-disable no-use-before-define */
 /* eslint-disable no-console */
 /* eslint-disable max-len */
+import chalk from 'chalk';
 import CenterConsole, { AlignmentChoices, LayoutChoices } from './center-console';
 import { render } from './runtime/c-dom';
 import { JSXConfig } from './runtime/c-dom-types';
@@ -10,6 +11,8 @@ export interface RowInternalLayout {
   textValue: string
   textLength: number
   alignment: AlignmentChoices
+  color?: string
+  background?: string
   widthModifier?: number
 }
 
@@ -23,6 +26,8 @@ export interface RowLayout {
   container: RowParentLayout
 }
 
+interface TextConfig {paddedString : string, textLength: number}
+
 function flattenElements(rowValue : JSXConfig, renderInstance: ConsoleRender) : RowLayout {
   const widthModifier = rowValue.props.width ? rowValue.props.width / 100 : undefined;
   const heightModifier = rowValue.props.height ? rowValue.props.height / 100 : undefined;
@@ -31,8 +36,12 @@ function flattenElements(rowValue : JSXConfig, renderInstance: ConsoleRender) : 
     const textValue = rowValue.props.nodeValue as string;
     const textLength = rowValue.props.nodeLength as number;
     const alignment = rowValue.props.alignContent || rowValue.parent?.alignContent || 'center';
+    const color = (rowValue.props.color || rowValue.parent?.color) as string;
+    const background = (rowValue.props.background || rowValue.parent?.background) as string;
     return {
       content: {
+        color,
+        background,
         textValue,
         textLength,
         alignment,
@@ -76,7 +85,7 @@ export class ConsoleRender extends CenterConsole {
     this.children.push(child);
   }
 
-  layoutHorizontalContent(singleRow: RowLayout, parentWidth = this.windowSize.x) : string[] {
+  layoutHorizontalContent(singleRow: RowLayout, parentWidth = this.windowSize.x) : TextConfig[] {
     if (Array.isArray(singleRow.content)) {
       const contentLength = singleRow.content.length;
       const stringsBuilt = singleRow.content.map(
@@ -91,27 +100,32 @@ export class ConsoleRender extends CenterConsole {
       const rowLength = this.windowSize.x;
       let rowWidthRemainder = rowLength;
       return stringsBuilt.reduce((acc, cur) => {
-        const currentStringLength = cur[0].length;
+        const currentStringLength = cur[0].textLength;
         const lastItem = acc.pop();
-        const combinedWidth = (lastItem?.length || 0) + currentStringLength;
+        const combinedWidth = (lastItem?.textLength || 0) + currentStringLength;
         rowWidthRemainder -= currentStringLength;
         if (currentStringLength !== rowLength && combinedWidth <= rowLength && rowWidthRemainder >= 0) {
-          const newString = [lastItem, cur[0]].join('');
+          const newString = [lastItem?.paddedString, cur[0].paddedString].join('');
           if (rowWidthRemainder === 0) rowWidthRemainder = rowLength;
-          return [...acc, newString];
+          return [...acc, { paddedString: newString, textLength: combinedWidth }];
         }
         return [...acc, ...cur];
-      }, ['']);
+      }, [{ paddedString: '', textLength: 0 }]);
     }
     const {
-      textLength, alignment, textValue, widthModifier,
+      textLength, alignment, textValue, widthModifier, color, background,
     } = singleRow.content;
+    let builtString = textValue;
+    if (color) builtString = chalk.hex(color)(builtString);
+    if (background) builtString = chalk.bgHex(background)(builtString);
     const blockSplit = textValue ? textValue.split('\n') : [];
     if (blockSplit.length > 1) {
       return blockSplit.map((splitBlock) => {
         const subRow : RowInternalLayout = {
           textValue: splitBlock,
           alignment,
+          color,
+          background,
           textLength: splitBlock.length,
           widthModifier,
         };
@@ -126,20 +140,20 @@ export class ConsoleRender extends CenterConsole {
     const paddingRight = this.getRightPadding(textLength, alignment, parentWidth);
     const paddedString = [
       ...Array(paddingLeft).fill(' ').join(''),
-      ...textValue,
+      ...builtString,
       ...Array(paddingRight).fill(' ').join(''),
     ].join('');
-    return [paddedString];
+    return [{ paddedString, textLength: textLength + paddingLeft + paddingRight }];
   }
 
-  layoutVerticalContent(singleRow: RowLayout, rowContent: string | string[], parentHeight = this.windowSize.y) {
+  layoutVerticalContent(singleRow: RowLayout, rowContent: TextConfig | TextConfig[], parentHeight = this.windowSize.y) {
     const { heightModifier, layoutPosition } = singleRow.container;
     let baseHeight = parentHeight;
     if (heightModifier) baseHeight = Math.floor(heightModifier * parentHeight);
     const rowHeights = Array.isArray(rowContent) ? rowContent.length : 1;
     const paddingTop = this.getTopPadding(rowHeights, layoutPosition, baseHeight);
     const paddingBottom = this.getBottomPadding(rowHeights, layoutPosition, baseHeight);
-    const rowSpread = Array.isArray(rowContent) ? [...rowContent] : [rowContent];
+    const rowSpread = Array.isArray(rowContent) ? rowContent.map((row) => row.paddedString) : [rowContent.paddedString];
     return [
       ...Array(paddingTop).fill(' '),
       ...rowSpread,

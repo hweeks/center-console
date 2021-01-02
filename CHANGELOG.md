@@ -1,3 +1,10 @@
+# [2.1.0](https://github.com/hweeks/center-console/compare/v2.0.0...v2.1.0) (2021-01-02)
+
+
+### Features
+
+* add color support ([6ac1b0d](https://github.com/hweeks/center-console/commit/6ac1b0d64dcd5b020b82c00172cd395138087c27))
+
 # [2.0.0](https://github.com/hweeks/center-console/compare/v1.1.0...v2.0.0) (2021-01-02)
 
 

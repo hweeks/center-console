@@ -135,6 +135,7 @@ and make sure you make ts preserve jsx:
   }
 }
 ```
+
 ### jsx props
 
 there are like 4 props we accept. please use the JSX export this package provides to see what is useable.
@@ -161,7 +162,7 @@ there is a type export, refer to it cuz source code rarely gets out of sync with
 
 ## prior art
 
-at this point honestly idk.
+c-dom based on a reworking for node of [pombo diy react](https://pomb.us/build-your-own-react/). not a whole hell of a lot of that applied, and it turns out that also having to build a dom sucked.
 
 ## about the author
 

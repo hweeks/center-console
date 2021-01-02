@@ -5,7 +5,7 @@ const multiLine = `text
 and
 lines`;
 
-const MultiDiv = ({ children } : {children: string}) => <div alignContent="center" alignSelf='center' height={50}>
+const MultiDiv = ({ children } : {children: any}) : ConsoleDiv => <div alignContent="center" alignSelf='center' height={50}>
   {children}
 </div>;
 
@@ -16,7 +16,6 @@ class StatefulSplash extends Component {
 
   constructor(...props) {
     super(...props);
-    this.interval = null;
     this.state = {
       date: 0,
     };
@@ -33,8 +32,8 @@ class StatefulSplash extends Component {
     const runTime = `running for ${date}ms`;
     return <main>
       <div alignSelf='top' height={25}>
-        <span alignContent="left" width={75}>logo</span>
-        <span alignContent="right" width={25}>{runTime}</span>
+        <span alignContent="left" width={75} color='#2832c2' background='#ffff00'>logo</span>
+        <span alignContent="right" width={25} background='#ffff00'>{runTime}</span>
       </div>
       <MultiDiv>{multiLine}</MultiDiv>
       <div alignSelf="bottom" height={25}>

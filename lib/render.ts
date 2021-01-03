@@ -19,10 +19,12 @@ export interface RowInternalLayout {
 export interface RowParentLayout {
   heightModifier?: number
   layoutPosition: LayoutChoices
+  blockLevel: boolean
 }
 
 export interface RowLayout {
   content: RowInternalLayout | RowLayout[]
+  parent?: JSXConfig
   container: RowParentLayout
 }
 
@@ -32,10 +34,12 @@ function flattenElements(rowValue : JSXConfig, renderInstance: ConsoleRender) : 
   const widthModifier = rowValue.props.width ? rowValue.props.width / 100 : undefined;
   const heightModifier = rowValue.props.height ? rowValue.props.height / 100 : undefined;
   const layoutPosition = rowValue.props.alignSelf || 'center';
+  const blockLevel = rowValue.type === 'div';
   if (rowValue.type === 'CONSOLE_TEXT') {
     const textValue = rowValue.props.nodeValue as string;
     const textLength = rowValue.props.nodeLength as number;
     const alignment = rowValue.props.alignContent || rowValue.parent?.alignContent || 'center';
+    const layout = rowValue.props.alignSelf || rowValue.parent?.alignSelf || 'center';
     const color = (rowValue.props.color || rowValue.parent?.color) as string;
     const background = (rowValue.props.background || rowValue.parent?.background) as string;
     return {
@@ -49,7 +53,8 @@ function flattenElements(rowValue : JSXConfig, renderInstance: ConsoleRender) : 
       },
       container: {
         heightModifier,
-        layoutPosition,
+        layoutPosition: layout,
+        blockLevel,
       },
     };
   }
@@ -58,9 +63,12 @@ function flattenElements(rowValue : JSXConfig, renderInstance: ConsoleRender) : 
     container: {
       heightModifier,
       layoutPosition,
+      blockLevel,
     },
   };
 }
+
+const areEqual = (a : string[], b: string[]) => a.every((val, index) => val === b[index]);
 
 export class ConsoleRender extends CenterConsole {
   children: any
@@ -88,22 +96,26 @@ export class ConsoleRender extends CenterConsole {
   layoutHorizontalContent(singleRow: RowLayout, parentWidth = this.windowSize.x) : TextConfig[] {
     if (Array.isArray(singleRow.content)) {
       const contentLength = singleRow.content.length;
-      const stringsBuilt = singleRow.content.map(
-        (row) => {
-          let widthToDivide = Math.floor(parentWidth / contentLength);
+      const rowLength = this.windowSize.x;
+      let rowWidthRemainder = rowLength;
+      return singleRow.content.map(
+        (row, index) => {
+          const properWidth = singleRow.container.blockLevel ? this.windowSize.x : parentWidth;
+          const rounder = index % 2 === 0 ? Math.floor : Math.ceil;
+          let widthToDivide = rounder(properWidth / contentLength);
           if (!Array.isArray(row.content) && row.content.widthModifier) {
-            widthToDivide = parentWidth * row.content.widthModifier;
+            widthToDivide = properWidth * row.content.widthModifier;
           }
           return this.layoutHorizontalContent(row, widthToDivide);
         },
-      );
-      const rowLength = this.windowSize.x;
-      let rowWidthRemainder = rowLength;
-      return stringsBuilt.reduce((acc, cur) => {
+      ).reduce((acc, cur) => {
         const currentStringLength = cur[0].textLength;
         const lastItem = acc.pop();
         const combinedWidth = (lastItem?.textLength || 0) + currentStringLength;
         rowWidthRemainder -= currentStringLength;
+        if (lastItem && lastItem.textLength >= this.windowSize.x - 1) {
+          return [...acc, lastItem, cur[0]];
+        }
         if (currentStringLength !== rowLength && combinedWidth <= rowLength && rowWidthRemainder >= 0) {
           const newString = [lastItem?.paddedString, cur[0].paddedString].join('');
           if (rowWidthRemainder === 0) rowWidthRemainder = rowLength;
@@ -146,7 +158,21 @@ export class ConsoleRender extends CenterConsole {
     return [{ paddedString, textLength: textLength + paddingLeft + paddingRight }];
   }
 
-  layoutVerticalContent(singleRow: RowLayout, rowContent: TextConfig | TextConfig[], parentHeight = this.windowSize.y) {
+  layoutVerticalContent(singleRow: RowLayout, rowContent: TextConfig | TextConfig[], parentHeight = this.windowSize.y) : string[] {
+    if (Array.isArray(singleRow.content)) {
+      const output = singleRow.content.map((row, index) => {
+        const baseHeight = row.container.heightModifier ? row.container.heightModifier * parentHeight : parentHeight;
+        const rounder = index % 2 === 0 ? Math.floor : Math.ceil;
+        const rowHeight = Array.isArray(row.content) ? row.content.length : 1;
+        const partialHeight = rounder(baseHeight / rowHeight);
+        const foundContent = Array.isArray(rowContent) ? rowContent[index] : rowContent;
+        return this.layoutVerticalContent(row, foundContent, partialHeight);
+      });
+      return output.reduce((acc, cur) => {
+        if (areEqual(acc, cur)) return [...cur];
+        return [...acc, ...cur];
+      }, []);
+    }
     const { heightModifier, layoutPosition } = singleRow.container;
     let baseHeight = parentHeight;
     if (heightModifier) baseHeight = Math.floor(heightModifier * parentHeight);

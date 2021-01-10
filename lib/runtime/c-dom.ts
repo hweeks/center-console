@@ -196,7 +196,7 @@ function workLoop() {
     commitRoot();
   }
 
-  setImmediate(workLoop);
+  nextUnitOfWork && setImmediate(workLoop);
 }
 
 function performUnitOfWork(fiber: Fiber) : Fiber | undefined {

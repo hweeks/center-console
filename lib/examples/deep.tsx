@@ -6,9 +6,9 @@ class Deep extends Component {
   render() {
     return <main>
       <div height={100}>
-        <div>
-          <span alignSelf='top' alignContent="left" width={75} color='#2832c2' background='#ffff00'>logo</span>
-          <span alignSelf='top' alignContent="right" width={25} background='#ffff00'>lol</span>
+        <div alignSelf='top'>
+          <span alignContent="left" width={75} color='#2832c2' background='#ffff00'>logo</span>
+          <span alignContent="right" width={25} background='#ffff00'>lol</span>
         </div>
         <div>
           <span alignContent="left" width={33}>left</span>

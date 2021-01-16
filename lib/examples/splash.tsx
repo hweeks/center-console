@@ -9,7 +9,7 @@ const MultiDiv = ({ children } : {children: any}) : ConsoleDiv => <div alignCont
   {children}
 </div>;
 
-class StatefulSplash extends Component {
+export default class StatefulSplash extends Component {
   interval?: NodeJS.Timer
 
   startTime: number
@@ -45,5 +45,7 @@ class StatefulSplash extends Component {
   }
 }
 
-const someDom = new ConsoleRender();
-someDom.display(<StatefulSplash />);
+if (process.env.NODE_ENV !== 'test') {
+  const someDom = new ConsoleRender();
+  someDom.display(<StatefulSplash />);
+}

@@ -30,6 +30,8 @@ jobs:
         run: yarn install
       - name: Lint code
         run: yarn lint
+      - name: Test code
+        run: yarn test
       - name: Lint commit
         run: yarn commitlint $( git log -1 --pretty=format:"%s" )
 

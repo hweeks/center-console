@@ -1,3 +1,18 @@
+# [2.2.0](https://github.com/hweeks/center-console/compare/v2.1.0...v2.2.0) (2021-01-23)
+
+
+### Bug Fixes
+
+* more work on tests ([e7e1742](https://github.com/hweeks/center-console/commit/e7e1742fa1b646ff7184df3427f1d8c867f6cf10))
+
+
+### Features
+
+* actually test ([2007fc3](https://github.com/hweeks/center-console/commit/2007fc3224ad7aac4e1a0ca082a7fc0b732ad52d))
+* adding testing, check diff ([77b96a5](https://github.com/hweeks/center-console/commit/77b96a5700df2b81f5c68753c4ee1fcef55698bd))
+* adding tests that do something ([cf5055e](https://github.com/hweeks/center-console/commit/cf5055eb6e2627fce867bbeb6a1edeae8375c4ae))
+* internal subdivisions ([697537f](https://github.com/hweeks/center-console/commit/697537ffc0a41959437968136cf8c7132ca61d4a))
+
 # [2.1.0](https://github.com/hweeks/center-console/compare/v2.0.0...v2.1.0) (2021-01-02)
 
 

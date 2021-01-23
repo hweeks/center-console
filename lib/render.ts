@@ -71,9 +71,6 @@ function flattenElements(rowValue : JSXConfig, parent?: JSXConfig) : RowLayout {
   };
 }
 
-const areEqual = (a : string[], b: string[]) => a.every((val, index) => val === b[index]);
-const hasTextChildren = (cont: RowLayout) => cont.content?.textValue !== undefined;
-
 export class ConsoleRender extends CenterConsole {
   children: any
 
@@ -117,7 +114,6 @@ export class ConsoleRender extends CenterConsole {
         const lastItem = acc.pop();
         const combinedWidth = (lastItem?.textLength || 0) + currentStringLength;
         rowWidthRemainder -= currentStringLength;
-        debugger
         if (cur.length > 1 && lastItem) return [...acc, lastItem, ...cur];
         if (lastItem && lastItem.textLength >= this.windowSize.x - 1) {
           return [...acc, lastItem, cur[0]];
@@ -132,7 +128,7 @@ export class ConsoleRender extends CenterConsole {
     }
     const {
       textLength, alignment, textValue, widthModifier, color, background,
-    } = singleRow.content || {alignment: 'center', textLength: 0, textValue: ''};
+    } = singleRow.content || { alignment: 'center', textLength: 0, textValue: '' };
     let builtString = textValue;
     if (color) builtString = chalk.hex(color)(builtString);
     if (background) builtString = chalk.bgHex(background)(builtString);
@@ -165,20 +161,6 @@ export class ConsoleRender extends CenterConsole {
   }
 
   layoutVerticalContent(singleRow: RowLayout, rowContent: TextConfig | TextConfig[], parentHeight = this.windowSize.y) : string[] {
-    // if (Array.isArray(singleRow.children)) {
-    //   const textChildren = singleRow.children.every(child => child.children?.every(hasTextChildren));
-    //   const output = singleRow.children.map((row, index) => {
-    //     const baseHeight = row.container.heightModifier ? row.container.heightModifier * parentHeight : parentHeight;
-    //     const rounder = index % 2 === 0 ? Math.floor : Math.ceil;
-    //     const rowHeight = Array.isArray(row.content) ? row.content.length : 1;
-    //     const partialHeight = rounder(baseHeight / rowHeight);
-    //     const foundContent = Array.isArray(rowContent) ? rowContent[index] : rowContent;
-    //     return this.layoutVerticalContent(row, foundContent, partialHeight);
-    //   });
-    //   debugger
-    //   if (textChildren) return output[0];
-    //   return [];
-    // }
     const { heightModifier, layoutPosition } = singleRow.container;
     let baseHeight = parentHeight;
     if (heightModifier) baseHeight = Math.floor(heightModifier * parentHeight);
@@ -198,9 +180,7 @@ export class ConsoleRender extends CenterConsole {
     const elementsToRender : RowLayout[] = children || [];
     const columnsRendered = elementsToRender.map((row) => this.layoutHorizontalContent(row));
     const rowsRendered : string[][] = elementsToRender.map((row, index) => this.layoutVerticalContent(row, columnsRendered[index]));
-    debugger
     console.clear();
-    console.warn(rowsRendered)
     rowsRendered.map((row) => row.map((val) => console.log(val)));
   }
 

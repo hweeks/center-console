@@ -196,6 +196,7 @@ function workLoop() {
     commitRoot();
   }
 
+  // eslint-disable-next-line no-unused-expressions
   nextUnitOfWork && setImmediate(workLoop);
 }
 

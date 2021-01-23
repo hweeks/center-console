@@ -42,6 +42,7 @@ const buildChildNodes = (children : JSXFactoryConfig['children'], parentProps : 
       return child;
     });
   }
+  if (typeof children === 'object') return [children];
   return [createTextNode(children, parentProps)];
 };
 
@@ -74,7 +75,7 @@ export function createElement(type: TypeTypes, config: JSXFactoryConfig) : JSXCo
 }
 
 function createTextNode(text: string, parent: Proppy) : JSXConfig {
-  const castedText = `${text}`;
+  const castedText = text !== undefined ? `${text}` : '';
   const height = castedText.split('\n').length;
   return {
     type: 'CONSOLE_TEXT',
@@ -195,7 +196,8 @@ function workLoop() {
     commitRoot();
   }
 
-  setImmediate(workLoop);
+  // eslint-disable-next-line no-unused-expressions
+  nextUnitOfWork && setImmediate(workLoop);
 }
 
 function performUnitOfWork(fiber: Fiber) : Fiber | undefined {

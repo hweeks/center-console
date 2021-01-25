@@ -7,6 +7,8 @@ import { render } from './runtime/c-dom';
 import { JSXConfig } from './runtime/c-dom-types';
 import JOREL from './scheduler';
 
+const syncWrite = (val: unknown) => new Promise((res) => process.stdout.write(`${val}\n`, res));
+
 export interface RowInternalLayout {
   textValue: string
   textLength: number
@@ -180,8 +182,7 @@ export class ConsoleRender extends CenterConsole {
     const elementsToRender : RowLayout[] = children || [];
     const columnsRendered = elementsToRender.map((row) => this.layoutHorizontalContent(row));
     const rowsRendered : string[][] = elementsToRender.map((row, index) => this.layoutVerticalContent(row, columnsRendered[index]));
-    console.clear();
-    rowsRendered.map((row) => row.map((val) => console.log(val)));
+    rowsRendered.map((row) => row.map((val) => syncWrite(val)));
   }
 
   display(input?: any) {

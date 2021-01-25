@@ -7,11 +7,7 @@ const multiLine = `text
 and
 lines`;
 
-const MultiDiv = () : ConsoleDiv => <div alignContent="center" height={50}>
-  {multiLine}
-</div>;
-
-const MultiResponse = `
+const output1 = `
 
 
 
@@ -22,10 +18,47 @@ const MultiResponse = `
 
 `;
 
+const helloOutput = `
+
+
+
+
+
+
+
+
+                                   hello
+
+
+
+
+
+
+
+
+`;
+
+const variousTests : [string, ()=> ConsoleDiv, string][] = [
+  [
+    'half height centered text',
+    () : ConsoleDiv => <div alignContent="center" height={50}>
+      {multiLine}
+    </div>,
+    output1,
+  ],
+  [
+    'full height centered text',
+    () : ConsoleDiv => <div alignContent="right">
+      hello
+    </div>,
+    helloOutput,
+  ],
+];
+
 describe('simple layouts', () => {
-  test('multiline centering with fractional height', () => {
+  test.each(variousTests)('%s', (desc, Comp, response) => {
     const someDom = new ConsoleRender();
-    someDom.display(<MultiDiv />);
-    expect(getConsoleOutput()).toHaveRenderedOutput(MultiResponse);
+    someDom.display(<Comp />);
+    expect(global.getConsoleOutput()).toHaveRenderedOutput(response);
   });
 });

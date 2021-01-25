@@ -1,3 +1,4 @@
+/* eslint-disable import/no-extraneous-dependencies */
 const NodeEnvironment = require('jest-environment-node');
 
 const defaultWindowSize = [40, 20];

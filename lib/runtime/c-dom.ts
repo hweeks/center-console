@@ -26,6 +26,15 @@ let wipRoot : Fiber | undefined;
 let deletions : Fiber[] = [];
 let wipFiber : Fiber;
 
+export const testReset = () => {
+  nextUnitOfWork = undefined;
+  currentRoot = undefined;
+  wipRoot = undefined;
+  deletions = [];
+};
+
+JOREL.on('TEST_CLEAR', () => testReset());
+
 const whatTypeIsThis = (typeToCheck: TypeTypes) => {
   if (typeof typeToCheck === 'string') {
     return 'string';

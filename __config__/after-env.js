@@ -1,35 +1,40 @@
-const { matcherHint} = require('jest-matcher-utils');
+/* eslint-disable import/no-extraneous-dependencies */
+const { matcherHint } = require('jest-matcher-utils');
 const diffDefault = require('jest-diff').default;
+const JOREL = require('../lib/scheduler').default;
 
-const logBack = console.log;
+const logBack = process.stdout.write;
 let messages = [];
 const clearBack = console.clear;
-global.beforeEach(() => {
-  console.log = jest.fn((message) => messages.push(message.trimEnd()));
+beforeEach(() => {
+  process.stdout.write = jest.fn((message) => messages.push(message.trimEnd()));
   console.clear = jest.fn();
 });
-global.afterEach(() => {
+afterEach(() => {
   messages = [];
-  console.log = logBack;
+  process.stdout.write = logBack;
   console.clear = clearBack;
+  JOREL.emit('TEST_CLEAR');
 });
 
 global.getConsoleOutput = () => messages;
 
 const isRoughlyTheSame = (inputLayout, builtLayout) => {
   const builtInput = inputLayout.split('\n');
-  return builtLayout.every((row, index) => row.trimEnd() === builtInput[index].trimEnd());
+  const sameLength = builtInput.length === builtLayout.length;
+  const sameLayout = builtLayout.every((row, ind) => row.trimEnd() === builtInput[ind].trimEnd());
+  return sameLength && sameLayout;
 };
 
 const passMessage = (actual, expected) => () => `${matcherHint('.not.toHaveRenderedOutput')
 }\n\n`
   + `Expected rendered message to mostly match:\n${
-    diffDefault(expected.split('\n'), actual)}`;
+    diffDefault(expected, actual.join('\n'))}`;
 
 const failMessage = (actual, expected) => () => `${matcherHint('.toHaveRenderedOutput')
 }\n\n`
 + `Expected rendered message to mostly match:\n${
-  diffDefault(expected.split('\n'), actual)}`;
+  diffDefault(expected, actual.join('\n'))}`;
 
 expect.extend({
   toHaveRenderedOutput: (actual, expected) => {

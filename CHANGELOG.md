@@ -1,3 +1,10 @@
+## [2.2.1](https://github.com/hweeks/center-console/compare/v2.2.0...v2.2.1) (2021-01-25)
+
+
+### Bug Fixes
+
+* add tests and proper testing reset ([5019794](https://github.com/hweeks/center-console/commit/5019794b9394a12a585cfd2211605fb0c71c3eb9))
+
 # [2.2.0](https://github.com/hweeks/center-console/compare/v2.1.0...v2.2.0) (2021-01-23)
 
 

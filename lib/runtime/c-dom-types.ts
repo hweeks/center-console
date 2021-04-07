@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-use-before-define */
-import { AlignmentChoices, LayoutChoices } from '../center-console';
-import Component from '../component';
+import { AlignmentChoices, LayoutChoices } from '../renderer/base';
+import Component from './component';
 
 export type TypeAsString = string
 export type TypesAsFunction = (props?: Record<string, unknown>) => JSXConfig

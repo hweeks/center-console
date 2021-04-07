@@ -1,5 +1,5 @@
 import ConsoleRender from '..';
-import Component from '../component';
+import Component from '../runtime/component';
 
 const multiLine = `text
 and

@@ -2,9 +2,9 @@
 /* eslint-disable no-console */
 /* eslint-disable max-len */
 import chalk from 'chalk';
-import CenterConsole, { AlignmentChoices, LayoutChoices } from './center-console';
-import { render } from './runtime/c-dom';
-import { JSXConfig } from './runtime/c-dom-types';
+import BaseRenderer, { AlignmentChoices, LayoutChoices } from './base';
+import { render } from '../runtime/c-dom';
+import { JSXConfig } from '../runtime/c-dom-types';
 import JOREL from './scheduler';
 
 const syncWrite = (val: unknown) => new Promise((res) => process.stdout.write(`${val}\n`, res));
@@ -73,7 +73,7 @@ function flattenElements(rowValue : JSXConfig, parent?: JSXConfig) : RowLayout {
   };
 }
 
-export class ConsoleRender extends CenterConsole {
+export class ConsoleRender extends BaseRenderer {
   children: any
 
   rootElement?: JSXConfig

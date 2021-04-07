@@ -1,8 +1,8 @@
 /* eslint-disable no-plusplus */
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-use-before-define */
-import ConsoleElement from '../element';
-import JOREL from '../scheduler';
+import ConsoleElement from './element';
+import JOREL from '../renderer/scheduler';
 import {
   Fiber,
   TypeTypes,

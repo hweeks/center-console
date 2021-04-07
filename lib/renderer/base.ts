@@ -9,7 +9,7 @@ export interface ScreenSize {
 export type AlignmentChoices = 'left' | 'center' | 'right'
 export type LayoutChoices = 'top' | 'center' | 'bottom'
 
-export class CenterConsole {
+export class BaseRenderer {
   windowSize: ScreenSize
 
   align: AlignmentChoices
@@ -92,8 +92,8 @@ export class CenterConsole {
     let finalizedRows = shouldPadRows ? frameRows.map((row) => Array(this.getPadding(row.length)).fill(' ').join('') + row) : frameRows;
     finalizedRows = rowsToPad > 0 ? [...Array(rowsToPad).fill(' '), ...finalizedRows] : finalizedRows;
     console.clear();
-    console.log(finalizedRows.join('\n'));
+    process.stdout.write(finalizedRows.join('\n'));
   }
 }
 
-export default CenterConsole;
+export default BaseRenderer;

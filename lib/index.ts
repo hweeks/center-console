@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
-import CenterConsole from './center-console';
-import Component from './component';
-import { ConsoleRender } from './render';
+import CenterConsole from './renderer/base';
+import Component from './runtime/component';
+import { ConsoleRender } from './renderer/console';
 
 export default ConsoleRender;
 

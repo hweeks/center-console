@@ -1,6 +1,6 @@
-import { JSXConfig } from './runtime/c-dom-types';
-import { ElementInput } from './runtime/jsx-runtime';
-import JOREL from './scheduler';
+import { JSXConfig } from './c-dom-types';
+import { ElementInput } from './jsx-runtime';
+import JOREL from '../renderer/scheduler';
 
 class Component {
   computedValue: JSXConfig | null

@@ -1,7 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 const { matcherHint } = require('jest-matcher-utils');
 const diffDefault = require('jest-diff').default;
-const JOREL = require('../lib/scheduler').default;
+const JOREL = require('../lib/renderer/scheduler').default;
 
 const logBack = process.stdout.write;
 let messages = [];
